@@ -9,13 +9,21 @@ workflows:
       ios_signing:
         distribution_type: app_store
         bundle_identifier: com.signfix.app
+      flutter: stable
+      xcode: latest
     scripts:
+      - name: Initialize App Store Connect API and signing profiles
+        script: |
+          keychain initialize
+          app-store-connect fetch-signing-files "com.signfix.app" --type IOS_APP_STORE --create
+          keychain add-certificates
+          xcode-project use-profiles
       - name: Install dependencies
         script: |
           flutter pub get
-      - name: Build ipa for distribution
+      - name: Build IPA for App Store
         script: |
-          xcode-project build-ipa --workspace ios/Runner.xcworkspace --scheme Runner
+          flutter build ipa --release --export-options-plist=/Users/builder/export_options.plist
     publishing:
       app_store_connect:
         auth: integration
