@@ -1,10 +1,8 @@
 workflows:
   ios-workflow:
-    name: iOS Workflow
+    name: iOS App Store Workflow
     max_build_duration: 60
     instance_type: mac_mini_m2
-    integrations:
-      app_store_connect: Codemagic
     environment:
       ios_signing:
         distribution_type: app_store
@@ -12,18 +10,18 @@ workflows:
       flutter: stable
       xcode: latest
     scripts:
-      - name: Initialize App Store Connect API and signing profiles
-        script: |
-          keychain initialize
-          app-store-connect fetch-signing-files "com.signfix.app" --type IOS_APP_STORE --create
-          keychain add-certificates
-          xcode-project use-profiles
-      - name: Install dependencies
+      - name: Get Flutter packages
         script: |
           flutter pub get
-      - name: Build IPA for App Store
+      - name: Pod install
         script: |
-          flutter build ipa --release --export-options-plist=/Users/builder/export_options.plist
+          cd ios && pod install
+      - name: Build IPA without signing
+        script: |
+          flutter build ipa --release --no-codesign
+      - name: Package and Sign IPA
+        script: |
+          xcode-project package-app --ipa-dir "$CM_BUILD_DIR/build/ios/ipa"
     publishing:
       app_store_connect:
         auth: integration
