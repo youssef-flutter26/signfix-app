@@ -3,6 +3,8 @@ workflows:
     name: iOS Workflow
     max_build_duration: 60
     instance_type: mac_mini_m2
+    integrations:
+      app_store_connect: Codemagic
     environment:
       ios_signing:
         distribution_type: app_store
@@ -11,12 +13,9 @@ workflows:
       - name: Install dependencies
         script: |
           flutter pub get
-      - name: Set up CocoaPods
-        script: |
-          cd ios && pod install
       - name: Build ipa for distribution
         script: |
-          flutter build ipa --release
+          xcode-project build-ipa --workspace ios/Runner.xcworkspace --scheme Runner
     publishing:
       app_store_connect:
         auth: integration
